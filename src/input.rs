@@ -27,7 +27,7 @@ impl TextInput {
     ) -> Self {
         TextInput {
             text: initial_text.to_string(),
-            cursor_position: 0,
+            cursor_position: initial_text.len(),
             placeholder: placeholder.map(String::from),
             padding,
             label: label.to_string(),
@@ -58,6 +58,7 @@ impl TextInput {
             self.cursor_position += 1;
         }
     }
+
     pub fn render(&self, x: u16, y: u16) {
         // Move to the position and clear the line for the label
         execute!(
@@ -163,4 +164,46 @@ pub fn handle_input(input: &mut TextInput, x: u16, y: u16) {
         }
     }
     disable_raw_mode().unwrap();
+}
+
+// Assuming this is at the end of lib.rs where TextInput is defined
+// Assuming this is at the end of lib.rs where TextInput is defined
+
+#[cfg(test)]
+mod tests {
+    use super::*; // Import everything from the outer module
+
+    #[test]
+    fn test_insert_char() {
+        let mut text_input = TextInput::new(None, 0, "", "Label", None);
+        text_input.insert_char('a');
+        assert_eq!(text_input.text, "a");
+        assert_eq!(text_input.cursor_position, 1);
+    }
+
+    #[test]
+    fn test_delete_char() {
+        let mut text_input = TextInput::new(None, 0, "a", "Label", None);
+        text_input.delete_char();
+        assert_eq!(text_input.text, "");
+        assert_eq!(text_input.cursor_position, 0);
+    }
+
+    #[test]
+    fn test_move_cursor_left() {
+        let mut text_input = TextInput::new(None, 0, "ab", "Label", None);
+        text_input.move_cursor_right(); // Move cursor to end
+        text_input.move_cursor_left();
+        assert_eq!(text_input.cursor_position, 1);
+    }
+
+    #[test]
+    fn test_move_cursor_right() {
+        let mut text_input = TextInput::new(None, 0, "abc", "Label", None);
+        text_input.move_cursor_right();
+        text_input.move_cursor_right();
+        text_input.move_cursor_left();
+        text_input.move_cursor_right(); // Should be at the end now
+        assert_eq!(text_input.cursor_position, 3);
+    }
 }

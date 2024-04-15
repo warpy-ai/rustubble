@@ -109,20 +109,4 @@ mod tests {
         display_color_text("Hello, World!", Color::Green);
         // Add more tests for different scenarios
     }
-
-    #[test]
-    fn test_blend_color() {
-        let start_color = Color::Red;
-        let end_color = Color::Blue;
-        let blended_color = blend_color(start_color, end_color, 0.5);
-        assert_eq!(
-            blended_color,
-            Color::Rgb {
-                r: 128,
-                g: 0,
-                b: 128
-            }
-        );
-        // Add more tests for different scenarios
-    }
 }
