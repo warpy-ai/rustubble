@@ -30,6 +30,4 @@ fn main() {
 
     // Loop to handle input, breaking on specific conditions (like pressing Esc)
     handle_input(&mut text_input, x, y);
-
-    text_input.render(x, y);
 }
