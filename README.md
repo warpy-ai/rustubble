@@ -79,9 +79,16 @@ fn main() -> crossterm::Result<()> {
 
 # Spinner Component
 
-A Spinnner component that displays a loading animation.
+The Spinner Component provides an easy-to-use and customizable loading animation for CLI applications written in Rust, utilizing the Crossterm library to handle terminal output. This component allows for a dynamic visual display during long-running operations.
 
 ![spinner](https://github.com/warpy-ai/rustubble/blob/main/assets/spinner.gif)
+
+## Features
+
+- **Multiple Spinner Styles**: Choose from a variety of predefined spinner styles including dots, lines, and more complex patterns.
+- **Customizable Speed**: Control the speed of the spinner animation.
+- **Customizable Messages**: Attach messages alongside the spinner to provide real-time feedback to users.
+- **Easy Integration**: Simple API for starting, updating, and stopping the spinner.
 
 ## Usage
 
@@ -114,3 +121,41 @@ fn main() {
     println!("Operation completed.");
 }
 ```
+
+### Customizing the Spinner
+
+You can customize the spinner style and message at initialization. Here's how you can specify a different spinner style:
+
+```rust
+let spinner = Spinner::new("Dots2", "Loading resources...");
+```
+
+Available styles include `Dots`, `Dots2`, `Dots3`, etc. Refer to the `spinner_data.rs` file for a complete list of available styles and their configurations.
+
+## Spinner Styles
+
+The spinner styles are predefined in a `lazy_static` block within the `spinner_data.rs` file. Each style is represented by a unique key and includes an array of frames and an interval timing in milliseconds.
+
+Here’s an excerpt from the spinner styles definition:
+
+```rust
+lazy_static! {
+    static ref SPINNERS: HashMap<String, SpinnerData> = {
+        hashmap! {
+            "Dots".into() => SpinnerData {
+                frames: vec!["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"],
+                interval: 80
+            },
+            // Additional spinner styles...
+        }
+    };
+}
+```
+
+## Contribution
+
+Contributions are welcome! If you have suggestions for improving the spinner or adding new styles, please open an issue or pull request on our GitHub repository.
+
+## License
+
+This project is licensed under the Apache License - see the [LICENSE](https://github.com/warpy-ai/rustubble/blob/main/LICENSE.md) file for details.
