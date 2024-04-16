@@ -1,30 +1,29 @@
 mod colors;
+mod helper;
 mod spinner;
 mod text_area;
 
-use std::io::stdout;
+use std::io::{self, stdout};
 
 use crossterm::execute;
-use crossterm::style::Color;
-use crossterm::terminal::{EnterAlternateScreen, LeaveAlternateScreen};
-use spinner::handle_spinner;
-use spinner::Spinner;
-fn main() {
-    execute!(stdout(), EnterAlternateScreen).unwrap();
+use crossterm::terminal::{
+    disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
+};
+use text_area::handle_text_area;
+use text_area::TextArea;
 
-    let spinner = Spinner::new(
-        Color::Rgb {
-            r: 0,
-            g: 255,
-            b: 255,
-        },
-        "Loading... Please wait.".to_string(),
-        "FingerDance",
-    );
+fn main() -> io::Result<()> {
+    let mut stdout = stdout();
 
-    let (x, y) = (10, 10);
-    handle_spinner(&spinner, x, y);
+    execute!(stdout, EnterAlternateScreen)?;
+    enable_raw_mode()?;
 
-    execute!(stdout(), LeaveAlternateScreen).unwrap();
-    println!("Operation completed.");
+    let mut text_area = TextArea::new("Type here:", Some("Press ESC to exit."), 6);
+    text_area.render(0, 1); // Initial render at position (0, 1)
+
+    handle_text_area(&mut text_area, 0, 1);
+
+    disable_raw_mode()?;
+    execute!(stdout, LeaveAlternateScreen)?;
+    Ok(())
 }
