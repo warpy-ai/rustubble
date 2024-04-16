@@ -2,6 +2,8 @@
 
 Beautifull components for your terminal.
 
+[![Rust](https://github.com/warpy-ai/rustubble/actions/workflows/rust.yml/badge.svg?branch=main)](https://github.com/warpy-ai/rustubble/actions/workflows/rust.yml)
+
 # Motive
 
 This project aims to provide a set of components that can be used in your terminal applications.
