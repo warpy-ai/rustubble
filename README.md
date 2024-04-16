@@ -77,34 +77,38 @@ fn main() -> crossterm::Result<()> {
 
 # Spinner Component
 
-A text area field, akin to an <textarea /> in HTML. Allows for input that spans multiple lines. Supports unicode, pasting, vertical scrolling when the value exceeds the width and height of the element, and many customization options.
+A Spinnner component that displays a loading animation.
 
-![textArea](https://github.com/warpy-ai/rustubble/blob/main/assets/textarea.gif)
+![spinner](https://github.com/warpy-ai/rustubble/blob/main/assets/spinner.gif)
 
 ## Usage
 
 ```rust
-use rustubble::handle_text_area;
-use rustubble::TextArea;
-use crossterm::{
-    execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-};
 use std::io::stdout;
 
-fn main() -> crossterm::Result<()> {
-    let mut stdout = stdout();
+use crossterm::execute;
+use crossterm::style::Color;
+use crossterm::terminal::{EnterAlternateScreen, LeaveAlternateScreen};
+use rustubble::spinner::handle_spinner;
+use rustubble::spinner::Spinner;
 
-    execute!(stdout, EnterAlternateScreen)?;
-    enable_raw_mode()?;
+fn main() {
+    execute!(stdout(), EnterAlternateScreen).unwrap();
 
-    let mut text_area = TextArea::new("Type here:", Some("Press ESC to exit."), 6);
-    text_area.render(0, 1); // Initial render at position (0, 1)
+    let spinner = Spinner::new(
+        Color::Rgb {
+            r: 0,
+            g: 255,
+            b: 255,
+        },
+        "Loading... Please wait.".to_string(),
+        "FingerDance",
+    );
 
-    handle_text_area(&mut text_area, 0, 1);
+    let (x, y) = (10, 10);
+    handle_spinner(&spinner, x, y);
 
-    disable_raw_mode()?;
-    execute!(stdout, LeaveAlternateScreen)?;
-    Ok(())
+    execute!(stdout(), LeaveAlternateScreen).unwrap();
+    println!("Operation completed.");
 }
 ```

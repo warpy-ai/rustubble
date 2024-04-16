@@ -19,6 +19,7 @@ fn main() {
             b: 255,
         },
         "Loading... Please wait.".to_string(),
+        "FingerDance",
     );
 
     let (x, y) = (10, 10);
