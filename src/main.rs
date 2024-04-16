@@ -1,33 +1,26 @@
-mod input;
-
-use crossterm::cursor::MoveTo;
-use crossterm::execute;
-use crossterm::terminal::Clear;
-use crossterm::terminal::ClearType;
-use input::handle_input;
-use input::TextInput;
-
 mod colors;
-mod helper;
+mod text_area;
 
-fn main() {
-    let mut text_input = TextInput::new(
-        Some("Type here..."),
-        2,
-        "",
-        "Input: ",
-        Some("Ctrl+C to exit, Enter to submit"),
-    );
+use crossterm::{
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+use std::io::stdout;
+use text_area::handle_text_area;
+use text_area::TextArea;
 
-    // Setting the cursor position and terminal attributes
-    let x = 5;
-    let y = 5;
+fn main() -> crossterm::Result<()> {
+    let mut stdout = stdout();
 
-    // Clear the screen initially and render the input field
-    execute!(std::io::stdout(), Clear(ClearType::All), MoveTo(x, y)).unwrap();
+    execute!(stdout, EnterAlternateScreen)?;
+    enable_raw_mode()?;
 
-    text_input.render(x, y);
+    let mut text_area = TextArea::new("Type here:", Some("Press ESC to exit."), 6);
+    text_area.render(0, 1); // Initial render at position (0, 1)
 
-    // Loop to handle input, breaking on specific conditions (like pressing Esc)
-    handle_input(&mut text_input, x, y);
+    handle_text_area(&mut text_area, 0, 1);
+
+    disable_raw_mode()?;
+    execute!(stdout, LeaveAlternateScreen)?;
+    Ok(())
 }
