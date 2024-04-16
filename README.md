@@ -74,3 +74,37 @@ fn main() -> crossterm::Result<()> {
     Ok(())
 }
 ```
+
+# Spinner Component
+
+A text area field, akin to an <textarea /> in HTML. Allows for input that spans multiple lines. Supports unicode, pasting, vertical scrolling when the value exceeds the width and height of the element, and many customization options.
+
+![textArea](https://github.com/warpy-ai/rustubble/blob/main/assets/textarea.gif)
+
+## Usage
+
+```rust
+use rustubble::handle_text_area;
+use rustubble::TextArea;
+use crossterm::{
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+use std::io::stdout;
+
+fn main() -> crossterm::Result<()> {
+    let mut stdout = stdout();
+
+    execute!(stdout, EnterAlternateScreen)?;
+    enable_raw_mode()?;
+
+    let mut text_area = TextArea::new("Type here:", Some("Press ESC to exit."), 6);
+    text_area.render(0, 1); // Initial render at position (0, 1)
+
+    handle_text_area(&mut text_area, 0, 1);
+
+    disable_raw_mode()?;
+    execute!(stdout, LeaveAlternateScreen)?;
+    Ok(())
+}
+```
