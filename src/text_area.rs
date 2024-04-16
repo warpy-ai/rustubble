@@ -1,3 +1,4 @@
+use crate::helper::Helper;
 use crossterm::{
     cursor::MoveTo,
     event::{read, Event, KeyCode, KeyEvent, KeyModifiers},
@@ -13,19 +14,19 @@ pub struct TextArea {
     cursor_y: usize,
     scroll_offset: usize, // Top visible line index
     label: String,
-    helper: Option<String>,
+    helper: Option<Helper>,
     visible_lines: usize,
 }
 
 impl TextArea {
-    pub fn new(label: &str, helper: Option<&str>, visible_lines: usize) -> Self {
+    pub fn new(label: &str, helper_text: Option<&str>, visible_lines: usize) -> Self {
         TextArea {
             text: vec![String::new()], // Start with one empty line
             cursor_x: 0,
             cursor_y: 0,
             scroll_offset: 0,
             label: label.to_string(),
-            helper: helper.map(String::from),
+            helper: helper_text.map(|text| Helper::new(text)),
             visible_lines,
         }
     }
@@ -166,12 +167,7 @@ impl TextArea {
 
         // Render the helper text below the last visible line
         if let Some(helper_text) = &self.helper {
-            execute!(
-                stdout,
-                MoveTo(x, y + 2 + self.visible_lines as u16 + 1),
-                Print(helper_text)
-            )
-            .unwrap();
+            helper_text.render(x, y + 2 + self.visible_lines as u16 + 1)
         }
 
         // Update the cursor position to reflect the latest changes
