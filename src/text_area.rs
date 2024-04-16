@@ -2,9 +2,8 @@ use crossterm::{
     cursor::MoveTo,
     event::{read, Event, KeyCode, KeyEvent, KeyModifiers},
     execute,
-    style::{Color, Print, ResetColor, SetForegroundColor},
+    style::Print,
     terminal::{Clear, ClearType},
-    ExecutableCommand,
 };
 use std::io::stdout;
 
