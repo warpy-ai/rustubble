@@ -1,14 +1,9 @@
-mod colors;
-mod helper;
-mod spinner;
-mod table;
-mod text_area;
-
 use std::vec;
 
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 
-use table::{handle_table, Table};
+extern crate rustubble;
+use rustubble::table::{handle_table, Table};
 
 fn main() -> std::io::Result<()> {
     enable_raw_mode()?; // Enable raw mode for direct terminal manipulation
