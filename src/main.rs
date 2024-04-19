@@ -66,7 +66,7 @@ fn main() -> std::io::Result<()> {
         // Add more rows as necessary
     ];
 
-    let mut table = Table::new(headers, data, 0, 3, 5); // Selected row is 0, padding is 1
+    let mut table = Table::new(headers, data, 0, 3, 7); // Selected row is 0, padding is 1
 
     let (x, y) = (5, 5);
     handle_table(&mut table, x, y);

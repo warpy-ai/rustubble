@@ -1,6 +1,9 @@
-use std::io::{stdout, Write};
+use std::{
+    cell,
+    io::{stdout, Write},
+};
 
-use crate::colors::custom::{CYAN, DARK_BLUE};
+use crate::colors::custom::PURPLE;
 use crossterm::{
     cursor::MoveTo,
     event::{read, Event, KeyCode, KeyEvent, KeyModifiers},
@@ -9,15 +12,6 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType},
 };
 
-pub struct TableData {
-    pub rows: Vec<Vec<String>>,
-}
-
-impl TableData {
-    pub fn new(rows: Vec<Vec<String>>) -> Self {
-        Self { rows }
-    }
-}
 // execute!(stdout, Clear(ClearType::All)).unwrap();
 pub struct Table {
     table_headers: Vec<String>,
@@ -98,8 +92,10 @@ impl Table {
         }
 
         // Render the bottom border
-        self.render_bottom_border(x, y, &column_widths);
+        self.render_bottom_border(x, y + 3, &column_widths);
 
+        //TODO: remove cursor
+        print!("\x1B[?25l");
         stdout.flush().unwrap();
     }
 
@@ -109,22 +105,31 @@ impl Table {
         execute!(stdout(), MoveTo(cursor_x, y)).unwrap();
         print!("│");
         cursor_x += 1;
+        let padding = " ".repeat(self.padding);
+
+        let column_widths =
+            Self::calculate_column_widths(&self.table_headers, &self.table_data, padding.len());
 
         for (idx, item) in items.iter().enumerate() {
-            let padding = " ".repeat(self.padding);
-            let content = format!("{}{}{}", padding, item, padding);
+            let cell_width = column_widths[idx]; // The calculated width for this column
+            let padded_item = format!(
+                "{}{:^cell_width$}{}",
+                padding,
+                item,
+                padding,
+                cell_width = cell_width - 2 * padding.len()
+            ); // Right-align the text within the space
             execute!(stdout(), MoveTo(cursor_x, y)).unwrap();
             if selected {
-                execute!(stdout(), SetBackgroundColor(Color::Cyan)).unwrap();
-            }
-            print!("{}", content);
-            if selected {
+                execute!(stdout(), SetBackgroundColor(PURPLE)).unwrap();
+                print!("{padded_item}"); // Print item within background
                 execute!(stdout(), ResetColor).unwrap();
+            } else {
+                print!("{padded_item}");
             }
-            let column_widths =
-                Self::calculate_column_widths(&self.table_headers, &self.table_data, self.padding);
             cursor_x += column_widths[idx as usize] as u16;
         }
+
         print!("│");
         println!();
     }
@@ -179,7 +184,7 @@ impl Table {
             "└{}┘",
             "─".repeat(self.table_width - (column_widths.len() + 1))
         );
-        execute!(stdout, MoveTo(x, y + self.table_data.len() as u16)).unwrap();
+        execute!(stdout, MoveTo(x, y + (self.visible_lines) as u16)).unwrap();
         println!("{}", bottom_border);
     }
 
