@@ -152,6 +152,99 @@ lazy_static! {
 }
 ```
 
+# Table
+
+The `Table` component allows you to create a table in your terminal application using Rust. The component provides a flexible and customizable way to display data in a table format.
+
+![table](https://github.com/warpy-ai/rustubble/blob/main/assets/table.png)
+
+## Usage
+
+```rust
+fn main() -> std::io::Result<()> {
+    enable_raw_mode()?; // Enable raw mode for direct terminal manipulation
+
+    let headers = vec![
+        "Rank".to_string(),
+        "City".to_string(),
+        "Country".to_string(),
+        "Population".to_string(),
+    ];
+
+    let data = vec![
+        vec![
+            "1".to_string(),
+            "Tokyo".to_string(),
+            "Japan".to_string(),
+            "37,274,000".to_string(),
+        ],
+        vec![
+            "2".to_string(),
+            "Delhi".to_string(),
+            "India".to_string(),
+            "32,065,760".to_string(),
+        ],
+        vec![
+            "3".to_string(),
+            "Delhi".to_string(),
+            "India".to_string(),
+            "32,065,760".to_string(),
+        ],
+        vec![
+            "4".to_string(),
+            "Delhi".to_string(),
+            "India".to_string(),
+            "32,065,760".to_string(),
+        ],
+        vec![
+            "5".to_string(),
+            "Delhi".to_string(),
+            "India".to_string(),
+            "32,065,760".to_string(),
+        ],
+        vec![
+            "6".to_string(),
+            "Delhi".to_string(),
+            "India".to_string(),
+            "32,065,760".to_string(),
+        ],
+        vec![
+            "7".to_string(),
+            "Delhi".to_string(),
+            "India".to_string(),
+            "32,065,760".to_string(),
+        ],
+        // Add more rows as necessary
+    ];
+
+    let mut table = Table::new(headers, data, 0, 3, 7); // Selected row is 0, padding is 1
+
+    let (x, y) = (5, 5);
+    handle_table(&mut table, x, y);
+
+    // Clean up the terminal
+    disable_raw_mode()?;
+    // Clean up before exiting
+
+    Ok(())
+}
+```
+
+### Customizing the Table
+
+You can set the padding, the number of visible lines and the scroll offset of the table. Here's an example of how you can customize the table:
+
+```rust
+let mut table = Table::new(headers, data, 0, 3, 7);
+```
+
+You can set the position of the table on the view when rendering:
+
+```rust
+ let (x, y) = (5, 5);
+  handle_table(&mut table, x, y);
+```
+
 ## Contribution
 
 Contributions are welcome! If you have suggestions for improving the spinner or adding new styles, please open an issue or pull request on our GitHub repository.
