@@ -159,7 +159,7 @@ lazy_static! {
 }
 ```
 
-# Table
+# Table Component
 
 The `Table` component allows you to create a table in your terminal application using Rust. The component provides a flexible and customizable way to display data in a table format.
 
