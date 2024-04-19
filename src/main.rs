@@ -1,29 +1,79 @@
 mod colors;
 mod helper;
 mod spinner;
+mod table;
 mod text_area;
 
-use std::io::{self, stdout};
+use std::vec;
 
-use crossterm::execute;
-use crossterm::terminal::{
-    disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
-};
-use text_area::handle_text_area;
-use text_area::TextArea;
+use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 
-fn main() -> io::Result<()> {
-    let mut stdout = stdout();
+use table::{handle_table, Table};
 
-    execute!(stdout, EnterAlternateScreen)?;
-    enable_raw_mode()?;
+fn main() -> std::io::Result<()> {
+    enable_raw_mode()?; // Enable raw mode for direct terminal manipulation
 
-    let mut text_area = TextArea::new("Type here:", Some("Press ESC to exit."), 6);
-    text_area.render(0, 1); // Initial render at position (0, 1)
+    let headers = vec![
+        "Rank".to_string(),
+        "City".to_string(),
+        "Country".to_string(),
+        "Population".to_string(),
+    ];
 
-    handle_text_area(&mut text_area, 0, 1);
+    let data = vec![
+        vec![
+            "1".to_string(),
+            "Tokyo".to_string(),
+            "Japan".to_string(),
+            "37,274,000".to_string(),
+        ],
+        vec![
+            "2".to_string(),
+            "Delhi".to_string(),
+            "India".to_string(),
+            "32,065,760".to_string(),
+        ],
+        vec![
+            "3".to_string(),
+            "Delhi".to_string(),
+            "India".to_string(),
+            "32,065,760".to_string(),
+        ],
+        vec![
+            "4".to_string(),
+            "Delhi".to_string(),
+            "India".to_string(),
+            "32,065,760".to_string(),
+        ],
+        vec![
+            "5".to_string(),
+            "Delhi".to_string(),
+            "India".to_string(),
+            "32,065,760".to_string(),
+        ],
+        vec![
+            "6".to_string(),
+            "Delhi".to_string(),
+            "India".to_string(),
+            "32,065,760".to_string(),
+        ],
+        vec![
+            "7".to_string(),
+            "Delhi".to_string(),
+            "India".to_string(),
+            "32,065,760".to_string(),
+        ],
+        // Add more rows as necessary
+    ];
 
+    let mut table = Table::new(headers, data, 0, 3, 5); // Selected row is 0, padding is 1
+
+    let (x, y) = (5, 5);
+    handle_table(&mut table, x, y);
+
+    // Clean up the terminal
     disable_raw_mode()?;
-    execute!(stdout, LeaveAlternateScreen)?;
+    // Clean up before exiting
+
     Ok(())
 }
