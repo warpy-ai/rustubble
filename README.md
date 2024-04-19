@@ -8,6 +8,13 @@ Beautifull components for your terminal.
 
 This project aims to provide a set of components that can be used in your terminal applications.
 
+# Components
+
+- [TextInput Component](#textinput-component)
+- [TextArea Component](#textarea-component)
+- [Spinner Component](#spinner-component)
+- [Table Component](#table-component)
+
 # TextInput Component
 
 The `TextInput` component is a versatile and customizable input field designed for terminal-based applications using Rust. It supports Unicode, dynamic input handling, and comes with a variety of customization options to enhance user interaction.
