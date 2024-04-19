@@ -15,6 +15,7 @@ pub struct TextInput {
     padding: usize,
     label: String,
     helper: Option<Helper>,
+    prefix: String,
 }
 
 impl TextInput {
@@ -24,6 +25,7 @@ impl TextInput {
         initial_text: &str,
         label: &str,
         helper_text: Option<&str>,
+        prefix: &str,
     ) -> Self {
         TextInput {
             text: initial_text.to_string(),
@@ -32,10 +34,16 @@ impl TextInput {
             padding,
             label: label.to_string(),
             helper: helper_text.map(|text| Helper::new(text)), // Initialize helper if provided
+            prefix: prefix.to_string(),
         }
     }
 
     pub fn insert_char(&mut self, c: char) {
+        if self.text == self.placeholder.as_ref().map_or("", String::as_str) || self.text.is_empty()
+        {
+            self.text.clear(); // Clear the initial or placeholder text
+            self.cursor_position = 0; // Reset the cursor position
+        }
         self.text.insert(self.cursor_position, c);
         self.cursor_position += 1;
     }
@@ -75,14 +83,20 @@ impl TextInput {
             Clear(ClearType::CurrentLine)
         )
         .unwrap();
-        let prefix = "> ";
         execute!(
             std::io::stdout(),
             MoveTo(x, y + 2),
             Clear(ClearType::CurrentLine),
             SetForegroundColor(Color::White),
             Print(" ".repeat(self.padding)), // Left padding
-            Print(prefix),                   // Render the prefix
+            Print(format!(
+                "{} ",
+                if self.prefix.is_empty() {
+                    ""
+                } else {
+                    self.prefix.as_str()
+                }
+            )), // Render the prefix
             SetForegroundColor(Color::Grey),
             Print(if self.text.is_empty() {
                 self.placeholder.as_deref().unwrap_or("")
@@ -101,7 +115,7 @@ impl TextInput {
         execute!(
             std::io::stdout(),
             MoveTo(
-                x + self.padding as u16 + prefix.len() as u16 + self.cursor_position as u16,
+                x + self.padding as u16 + self.prefix.len() as u16 + self.cursor_position as u16,
                 y + 2
             ),
             SetForegroundColor(Color::Reset)
@@ -111,7 +125,7 @@ impl TextInput {
         execute!(
             std::io::stdout(),
             MoveTo(
-                x + self.padding as u16 + prefix.len() as u16 + self.cursor_position as u16,
+                x + self.padding as u16 + self.prefix.len() as u16 + self.cursor_position as u16,
                 y + 2
             )
         )
@@ -123,6 +137,7 @@ impl TextInput {
 
 pub fn handle_input(input: &mut TextInput, x: u16, y: u16) {
     enable_raw_mode().unwrap();
+    input.render(x, y);
     loop {
         match read().unwrap() {
             Event::Key(KeyEvent {
@@ -166,16 +181,13 @@ pub fn handle_input(input: &mut TextInput, x: u16, y: u16) {
     disable_raw_mode().unwrap();
 }
 
-// Assuming this is at the end of lib.rs where TextInput is defined
-// Assuming this is at the end of lib.rs where TextInput is defined
-
 #[cfg(test)]
 mod tests {
     use super::*; // Import everything from the outer module
 
     #[test]
     fn test_insert_char() {
-        let mut text_input = TextInput::new(None, 0, "", "Label", None);
+        let mut text_input = TextInput::new(None, 0, "", "Label", None, "");
         text_input.insert_char('a');
         assert_eq!(text_input.text, "a");
         assert_eq!(text_input.cursor_position, 1);
@@ -183,7 +195,7 @@ mod tests {
 
     #[test]
     fn test_delete_char() {
-        let mut text_input = TextInput::new(None, 0, "a", "Label", None);
+        let mut text_input = TextInput::new(None, 0, "a", "Label", None, "");
         text_input.delete_char();
         assert_eq!(text_input.text, "");
         assert_eq!(text_input.cursor_position, 0);
@@ -191,7 +203,7 @@ mod tests {
 
     #[test]
     fn test_move_cursor_left() {
-        let mut text_input = TextInput::new(None, 0, "ab", "Label", None);
+        let mut text_input = TextInput::new(None, 0, "ab", "Label", None, "");
         text_input.move_cursor_right(); // Move cursor to end
         text_input.move_cursor_left();
         assert_eq!(text_input.cursor_position, 1);
@@ -199,7 +211,7 @@ mod tests {
 
     #[test]
     fn test_move_cursor_right() {
-        let mut text_input = TextInput::new(None, 0, "abc", "Label", None);
+        let mut text_input = TextInput::new(None, 0, "abc", "Label", None, "");
         text_input.move_cursor_right();
         text_input.move_cursor_right();
         text_input.move_cursor_left();

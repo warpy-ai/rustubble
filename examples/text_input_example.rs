@@ -1,24 +1,25 @@
 extern crate rustubble;
-use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
+use crossterm::{
+    execute,
+    terminal::{Clear, ClearType},
+};
 
-use rustubble::TextInput; // Adjust the import path based on your lib structure
+use rustubble::{input::handle_input, TextInput}; // Adjust the import path based on your lib structure
 
-fn main() -> std::io::Result<()> {
-    enable_raw_mode()?; // Enable raw mode for direct terminal manipulation
-    let text_input = TextInput::new(
+fn main() {
+    let mut text_input = TextInput::new(
         Some("Type here..."),   // Placeholder
         2,                      // Padding
-        "Hello, World!",        // Initial text
+        "Hello",                // Initial text
         "Enter text:",          // Label
         Some("Ctrl+C to exit"), // Helper text
+        ">",                    // Prefix
     );
 
-    let x = 5; // x position in the terminal
-    let y = 5; // y position in the terminal
+    let x = 5;
+    let y = 5;
 
-    text_input.render(x, y);
-
-    disable_raw_mode()?;
-    // Add interaction handling here based on your application logic
-    Ok(())
+    execute!(std::io::stdout(), Clear(ClearType::All)).unwrap();
+    // Assuming handle_input is defined to manage user interaction
+    handle_input(&mut text_input, x, y + 1);
 }
