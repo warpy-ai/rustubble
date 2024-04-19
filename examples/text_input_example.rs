@@ -1,12 +1,15 @@
 extern crate rustubble;
 use crossterm::{
+    cursor::MoveTo,
     execute,
-    terminal::{Clear, ClearType},
+    style::Print,
+    terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType},
 };
 
 use rustubble::{input::handle_input, TextInput}; // Adjust the import path based on your lib structure
 
 fn main() {
+    enable_raw_mode().unwrap();
     let mut text_input = TextInput::new(
         Some("Type here..."),   // Placeholder
         2,                      // Padding
@@ -21,5 +24,15 @@ fn main() {
 
     execute!(std::io::stdout(), Clear(ClearType::All)).unwrap();
     // Assuming handle_input is defined to manage user interaction
-    handle_input(&mut text_input, x, y + 1);
+    let input_value = handle_input(&mut text_input, x, y + 1);
+    let text_2 = format!("Input value: {:?}", input_value);
+    execute!(
+        std::io::stdout(),
+        MoveTo(x, y),
+        Clear(ClearType::CurrentLine),
+        Print(text_2),
+    )
+    .unwrap();
+
+    disable_raw_mode().unwrap();
 }

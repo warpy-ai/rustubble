@@ -3,7 +3,7 @@ use crossterm::{
     event::{read, Event, KeyCode, KeyEvent, KeyModifiers},
     execute,
     style::{Color, Print, SetForegroundColor},
-    terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType},
+    terminal::{Clear, ClearType},
 };
 
 use crate::helper::Helper;
@@ -125,7 +125,10 @@ impl TextInput {
         execute!(
             std::io::stdout(),
             MoveTo(
-                x + self.padding as u16 + self.prefix.len() as u16 + self.cursor_position as u16,
+                x + self.padding as u16
+                    + self.prefix.len() as u16
+                    + self.cursor_position as u16
+                    + 1,
                 y + 2
             )
         )
@@ -135,8 +138,7 @@ impl TextInput {
     }
 }
 
-pub fn handle_input(input: &mut TextInput, x: u16, y: u16) {
-    enable_raw_mode().unwrap();
+pub fn handle_input(input: &mut TextInput, x: u16, y: u16) -> Option<String> {
     input.render(x, y);
     loop {
         match read().unwrap() {
@@ -146,10 +148,22 @@ pub fn handle_input(input: &mut TextInput, x: u16, y: u16) {
                 ..
             }) => {
                 if modifiers.contains(KeyModifiers::CONTROL) && c == 'c' {
-                    break; // Break the loop if Ctrl+C is pressed
+                    return None;
                 }
+
                 input.insert_char(c);
                 input.render(x, y);
+            }
+            Event::Key(KeyEvent {
+                code: KeyCode::Enter,
+                ..
+            }) => {
+                // Check if text is not just the placeholder
+                if !input.text.is_empty()
+                    && input.text != input.placeholder.as_ref().map_or("", String::as_str)
+                {
+                    return Some(input.text.clone());
+                }
             }
             Event::Key(KeyEvent {
                 code: KeyCode::Backspace,
@@ -174,11 +188,10 @@ pub fn handle_input(input: &mut TextInput, x: u16, y: u16) {
             }
             Event::Key(KeyEvent {
                 code: KeyCode::Esc, ..
-            }) => break,
+            }) => return None,
             _ => {}
         }
     }
-    disable_raw_mode().unwrap();
 }
 
 #[cfg(test)]
