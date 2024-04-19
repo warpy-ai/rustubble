@@ -202,7 +202,6 @@ impl Table {
 }
 
 pub fn handle_table(table: &mut Table, x: u16, y: u16) {
-    enable_raw_mode().unwrap();
     // Clear the screen initially to start with a clean slate
     table.render(x, y);
 
@@ -239,6 +238,5 @@ pub fn handle_table(table: &mut Table, x: u16, y: u16) {
     }
 
     // Ensure the terminal is properly reset on exit
-    disable_raw_mode().unwrap();
     println!("Exiting gracefully...");
 }

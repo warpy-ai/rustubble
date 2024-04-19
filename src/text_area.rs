@@ -177,7 +177,8 @@ impl TextArea {
     // Methods to handle input, scroll, etc., go here
 }
 
-pub fn handle_text_area(text_area: &mut TextArea, x: u16, y: u16) {
+pub fn handle_text_area(text_area: &mut TextArea, x: u16, y: u16) -> Option<String> {
+    text_area.render(x, y);
     loop {
         match read().unwrap() {
             Event::Key(KeyEvent {
@@ -186,7 +187,7 @@ pub fn handle_text_area(text_area: &mut TextArea, x: u16, y: u16) {
                 ..
             }) => {
                 if modifiers.contains(KeyModifiers::CONTROL) && c == 'c' {
-                    break; // Break the loop if Ctrl+C is pressed
+                    return None; // Break the loop if Ctrl+C is pressed
                 }
                 text_area.insert_char(c);
                 text_area.render(x, y);
@@ -232,8 +233,15 @@ pub fn handle_text_area(text_area: &mut TextArea, x: u16, y: u16) {
                 text_area.insert_new_line();
             }
             Event::Key(KeyEvent {
+                code: KeyCode::Tab, ..
+            }) => {
+                if !text_area.text.is_empty() {
+                    return Some(text_area.text.join("\n"));
+                }
+            }
+            Event::Key(KeyEvent {
                 code: KeyCode::Esc, ..
-            }) => break,
+            }) => return None,
 
             _ => {}
         }
