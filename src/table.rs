@@ -1,15 +1,12 @@
-use std::{
-    cell,
-    io::{stdout, Write},
-};
+use std::io::{stdout, Write};
 
 use crate::colors::custom::PURPLE;
 use crossterm::{
     cursor::MoveTo,
     event::{read, Event, KeyCode, KeyEvent, KeyModifiers},
     execute,
-    style::{Color, Print, ResetColor, SetBackgroundColor},
-    terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType},
+    style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
+    terminal::{Clear, ClearType},
 };
 
 // execute!(stdout, Clear(ClearType::All)).unwrap();
@@ -20,6 +17,7 @@ pub struct Table {
     table_width: usize,
     padding: usize,
     visible_lines: usize,
+    scroll_offset: usize,
 }
 
 impl Table {
@@ -35,13 +33,14 @@ impl Table {
 
         let table_width = widths.iter().sum::<usize>() + widths.len() + 1;
 
-        Self {
+        Table {
             table_headers,
             table_data,
             selected_row,
             table_width,
             padding,
             visible_lines,
+            scroll_offset: 0,
         }
     }
 
@@ -81,21 +80,22 @@ impl Table {
         self.render_horizontal_line(x, y + 2, self.table_width, &column_widths);
 
         // Render table rows with total lines to clear
-        for (idx, row) in self
-            .table_data
-            .iter()
-            .skip(self.selected_row)
-            .take(self.visible_lines)
-            .enumerate()
-        {
-            self.render_row(x, y + 3 + idx as u16, row, idx == self.selected_row);
+        let start_row = self.scroll_offset;
+        let end_row = usize::min(
+            self.scroll_offset + self.visible_lines,
+            self.table_data.len(),
+        );
+
+        for (idx, row) in self.table_data[start_row..end_row].iter().enumerate() {
+            let is_selected = (self.scroll_offset + idx) == self.selected_row;
+            self.render_row(x, y + 3 + idx as u16, row, is_selected);
         }
 
         // Render the bottom border
         self.render_bottom_border(x, y + 3, &column_widths);
 
         //TODO: remove cursor
-        print!("\x1B[?25l");
+        self.hide_cursor();
         stdout.flush().unwrap();
     }
 
@@ -191,13 +191,29 @@ impl Table {
     pub fn move_cursor_down(&mut self) {
         if self.selected_row < self.table_data.len() - 1 {
             self.selected_row += 1;
+            if self.selected_row >= self.scroll_offset + self.visible_lines {
+                self.scroll_offset += 1; // Scroll down
+            }
         }
     }
 
     pub fn move_cursor_up(&mut self) {
         if self.selected_row > 0 {
             self.selected_row -= 1;
+            if self.selected_row < self.scroll_offset {
+                self.scroll_offset -= 1; // Scroll up
+            }
         }
+    }
+
+    fn hide_cursor(&self) {
+        print!("\x1B[?25l"); // Hide the cursor
+        std::io::stdout().flush().unwrap(); // Ensure the command is applied immediately
+    }
+
+    pub fn show_cursor(&self) {
+        print!("\x1B[?25h"); // Show the cursor
+        std::io::stdout().flush().unwrap(); // Ensure the command is applied immediately
     }
 }
 
