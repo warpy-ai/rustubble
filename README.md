@@ -114,6 +114,16 @@ You can set the position of the table on the view when rendering:
   handle_table(&mut table, x, y);
 ```
 
+# Progress bar Component
+
+The `ProgressBar` component is a versatile and customizable loading animation for CLI applications written in Rust. This component allows for a dynamic visual display during long-running operations.
+
+![progress](https://github.com/warpy-ai/rustubble/blob/main/assets/progress_bar.gif)
+
+## Usage
+
+- [Example Code](https://github.com/warpy-ai/rustubble/blob/main/examples/progress_bar_example.rs)
+
 ## Contribution
 
 Contributions are welcome! If you have suggestions for improving the spinner or adding new styles, please open an issue or pull request on our GitHub repository.
