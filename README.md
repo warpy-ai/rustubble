@@ -14,6 +14,7 @@ This project aims to provide a set of components that can be used in your termin
 - [TextArea Component](#textarea-component)
 - [Spinner Component](#spinner-component)
 - [Table Component](#table-component)
+- [Progress bar Component](#progress-bar-component)
 
 # TextInput Component
 
