@@ -1,9 +1,8 @@
+pub mod colors;
 pub mod helper;
 pub mod input;
-pub mod text_area;
-pub use input::TextInput;
-pub use text_area::TextArea;
-pub mod colors;
 pub mod progress_bar;
 pub mod spinner;
 pub mod table;
+pub mod text_area;
+pub mod viewport;

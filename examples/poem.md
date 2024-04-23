@@ -125,18 +125,6 @@ The `ProgressBar` component is a versatile and customizable loading animation fo
 
 - [Example Code](https://github.com/warpy-ai/rustubble/blob/main/examples/progress_bar_example.rs)
 
-
-
-# ViewPort Component
-
-The `ViewPort` component allows you to create a viewport in your terminal application. The component provides a flexible and customizable way to display data in a `String` view format
-
-![viewport](https://github.com/warpy-ai/rustubble/blob/main/assets/viewport.gif)
-
-## Usage
-
-- [Example Code](https://github.com/warpy-ai/rustubble/blob/main/examples/viewport_example.rs)
-
 ## Contribution
 
 Contributions are welcome! If you have suggestions for improving the spinner or adding new styles, please open an issue or pull request on our GitHub repository.

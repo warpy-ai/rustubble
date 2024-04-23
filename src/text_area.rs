@@ -249,3 +249,70 @@ pub fn handle_text_area(text_area: &mut TextArea, x: u16, y: u16) -> Option<Stri
         text_area.render(x, y);
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*; // Import everything from the parent module.
+
+    #[test]
+    fn test_insert_char() {
+        let mut text_area = TextArea::new("Example", None, 3);
+        text_area.insert_char('a');
+        assert_eq!(text_area.text[0], "a", "Character should be inserted");
+    }
+
+    #[test]
+    fn test_insert_new_line() {
+        let mut text_area = TextArea::new("Example", None, 3);
+        text_area.insert_char('a');
+        text_area.insert_char('\n');
+        assert_eq!(text_area.text.len(), 2, "New line should be added");
+        assert_eq!(text_area.cursor_y, 1, "Cursor should move to the new line");
+    }
+
+    #[test]
+    fn test_cursor_movement() {
+        let mut text_area = TextArea::new("Example", None, 3);
+        text_area.insert_char('a');
+        text_area.insert_char('b');
+        text_area.move_cursor_left();
+        assert_eq!(text_area.cursor_x, 1, "Cursor should move left");
+        text_area.move_cursor_right();
+        assert_eq!(text_area.cursor_x, 2, "Cursor should move right");
+        text_area.insert_char('\n');
+        text_area.move_cursor_up();
+        assert_eq!(text_area.cursor_y, 0, "Cursor should move up");
+        text_area.move_cursor_down();
+        assert_eq!(text_area.cursor_y, 1, "Cursor should move down");
+    }
+
+    #[test]
+    fn test_delete_char() {
+        let mut text_area = TextArea::new("Example", None, 3);
+        text_area.insert_char('a');
+        text_area.insert_char('b');
+        text_area.delete_char();
+        assert_eq!(text_area.text[0], "a", "Last character should be deleted");
+        text_area.insert_char('\n');
+
+        text_area.move_cursor_up();
+
+        text_area.delete_char(); // Deleting the new line
+        assert_eq!(text_area.text[0].len(), 1, "Lines should merge");
+    }
+
+    #[test]
+    fn test_scrolling() {
+        let mut text_area = TextArea::new("Example", None, 3);
+        for _ in 0..5 {
+            text_area.insert_char('a');
+            text_area.insert_char('\n');
+        }
+        text_area.move_cursor_down();
+        text_area.move_cursor_down();
+        text_area.move_cursor_down();
+        text_area.move_cursor_down(); // Move cursor to make scrolling necessary
+        assert_eq!(text_area.scroll_offset, 3, "Should scroll down when cursor moves beyond visible lines");
+    }
+}

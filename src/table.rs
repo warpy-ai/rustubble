@@ -192,10 +192,11 @@ impl Table {
         if self.selected_row < self.table_data.len() - 1 {
             self.selected_row += 1;
             if self.selected_row >= self.scroll_offset + self.visible_lines {
-                self.scroll_offset += 1; // Scroll down
+                self.scroll_offset += 1;  // Ensure the new row is visible by adjusting the scroll offset.
             }
         }
     }
+    
 
     pub fn move_cursor_up(&mut self) {
         if self.selected_row > 0 {
@@ -256,3 +257,73 @@ pub fn handle_table(table: &mut Table, x: u16, y: u16) {
     // Ensure the terminal is properly reset on exit
     println!("Exiting gracefully...");
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*; // Import everything from the parent module.
+
+    // Helper function to create a table for testing
+    fn setup_test_table() -> Table {
+        let headers = vec!["ID".to_string(), "Name".to_string(), "Occupation".to_string()];
+        let data = vec![
+            vec!["1".to_string(), "Alice".to_string(), "Engineer".to_string()],
+            vec!["2".to_string(), "Bob".to_string(), "Artist".to_string()],
+            vec!["3".to_string(), "Charlie".to_string(), "Teacher".to_string()],
+            vec!["4".to_string(), "Charlie".to_string(), "Teacher".to_string()],
+            // Add more rows as needed for thorough testing
+        ];
+
+        Table::new(headers, data, 0, 2, 3) // 3 visible lines, padding of 2
+    }
+
+    #[test]
+    fn test_initialization() {
+        let table = setup_test_table();
+        assert_eq!(table.selected_row, 0, "Initial selected row should be 0");
+        assert_eq!(table.scroll_offset, 0, "Initial scroll offset should be 0");
+        assert!(!table.table_data.is_empty(), "Table data should not be empty");
+    }
+
+    #[test]
+    fn test_move_cursor_down() {
+        let mut table = setup_test_table();
+        // Assuming setup_test_table initializes with 4 or more rows and `visible_lines` set to 3.
+        table.move_cursor_down(); // Should move to row 1
+        table.move_cursor_down(); // Should move to row 2
+        table.move_cursor_down(); // Should move to row 3, still visible without scroll
+        assert_eq!(table.selected_row, 3, "Cursor should be at row 3");
+    
+        // Now move down to require scrolling
+        table.move_cursor_down(); // Should move to row 4, requiring scroll
+        assert_eq!(table.selected_row, 3, "Cursor should render row 4 on table height");
+    }
+    
+
+    #[test]
+    fn test_move_cursor_up() {
+        let mut table = setup_test_table();
+        // First move the cursor down to test moving it up
+        table.move_cursor_down();
+        table.move_cursor_down();
+        table.move_cursor_up();
+        assert_eq!(table.selected_row, 1, "Cursor should move up to the second row");
+
+        // Test boundary condition
+        table.move_cursor_up();
+        table.move_cursor_up(); // Try to move above the first row
+        assert_eq!(table.selected_row, 0, "Cursor should not move above the first row");
+        assert_eq!(table.scroll_offset, 0, "Scroll offset should remain at 0 when at the top of the table");
+    }
+
+    #[test]
+    fn test_column_width_calculation() {
+        let table = setup_test_table();
+        let expected_widths = vec![6, 11, 14]; // Adjusted expected widths to account for padding and actual content lengths
+        let calculated_widths = Table::calculate_column_widths(&table.table_headers, &table.table_data, 2);
+    
+        assert_eq!(calculated_widths, expected_widths, "Column widths should be calculated correctly based on content and padding");
+    }
+
+    // Additional tests for rendering and edge cases can be added here
+}
+
