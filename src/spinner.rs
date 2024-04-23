@@ -1288,3 +1288,47 @@ pub fn handle_spinner(spinner: &Spinner, x: u16, y: u16) {
         }
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::{Arc, Mutex};
+
+    #[test]
+    fn test_spinner_start_stop() {
+        let spinner = Spinner::new(
+            Color::Rgb { r: 0, g: 255, b: 255 },
+            "Loading... Please wait.".to_string(),
+            "FingerDance",
+        );
+
+        let is_running = spinner.is_running.clone();
+        assert!(!*is_running.lock().unwrap(), "Spinner should not be running initially");
+
+        spinner.start(10, 10);
+        assert!(*is_running.lock().unwrap(), "Spinner should be running after start");
+
+        // Simulate some runtime
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        spinner.stop();
+        assert!(!*is_running.lock().unwrap(), "Spinner should stop after stop");
+    }
+
+    #[test]
+    fn test_frame_change() {
+        let spinner = Spinner::new(
+            Color::Rgb { r: 0, g: 255, b: 255 },
+            "Loading... Please wait.".to_string(),
+            "FingerDance",
+        );
+
+        spinner.start(10, 10);
+        let initial_frame = *spinner.current_frame.lock().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(200)); // wait enough time for at least one change
+        assert_ne!(initial_frame, *spinner.current_frame.lock().unwrap(), "Frame should change after interval");
+        spinner.stop();
+    }
+}
+
+

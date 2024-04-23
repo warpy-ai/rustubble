@@ -211,3 +211,72 @@ pub fn handle_viewport(viewport: &mut Viewport, x: u16, y: u16) {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*; // Import everything from the outer module.
+
+    // Helper function to create a viewport for testing
+    fn setup_viewport(content: &str, height: usize, width: usize) -> Viewport {
+        Viewport::new(
+            "Test Header".to_string(),
+            content.to_string(),
+            height,
+            width,
+            2
+        )
+    }
+
+    #[test]
+    fn test_no_scroll_when_content_fits() {
+        let content = "Short content";
+        let mut viewport = setup_viewport(content, 5, 50); // Height is more than needed for the content
+        viewport.scroll_down();
+        assert_eq!(viewport.scroll_offset, 0, "Scroll offset should not increase when all content fits within the viewport");
+    }
+
+    #[test]
+    fn test_scroll_down_within_content() {
+        let content = "Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7";
+        let mut viewport = setup_viewport(content, 3, 50); // Only part of the content fits at a time
+        viewport.scroll_down();
+        assert_eq!(viewport.scroll_offset, 1, "Scroll offset should increase by 1");
+
+        // Scroll to the bottom
+        viewport.scroll_down();
+        viewport.scroll_down();
+        viewport.scroll_down();
+        viewport.scroll_down(); // Try to scroll past the end
+        assert_eq!(viewport.scroll_offset, 4, "Scroll offset should stop at the maximum scrollable content");
+    }
+
+    #[test]
+    fn test_scroll_up_within_content() {
+        let content = "Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7";
+        let mut viewport = setup_viewport(content, 3, 50);
+        viewport.scroll_down(); // Set the offset to 1
+        viewport.scroll_down(); // Set the offset to 2
+        viewport.scroll_up();
+        assert_eq!(viewport.scroll_offset, 1, "Scroll offset should decrease by 1");
+
+        // Try scrolling past the beginning
+        viewport.scroll_up();
+        viewport.scroll_up();
+        assert_eq!(viewport.scroll_offset, 0, "Scroll offset should not go below 0");
+    }
+
+    #[test]
+    fn test_page_down_and_page_up() {
+        let content = "Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10";
+        let mut viewport = setup_viewport(content, 3, 50); // Setup viewport with 3 lines visible at a time
+        viewport.page_down();
+        assert_eq!(viewport.scroll_offset, 3, "Page down should scroll down by the height of the viewport");
+
+        viewport.page_down();
+        assert!(viewport.scroll_offset <= 7, "Second page down should not scroll past the content length minus viewport height");
+
+        // Test page up
+        viewport.page_up();
+        assert_eq!(viewport.scroll_offset, 3, "Page up should scroll up by the height of the viewport");
+    }
+}
