@@ -8,7 +8,7 @@ use crossterm::{
     terminal::{EnterAlternateScreen, LeaveAlternateScreen},
 };
 use rustubble::text_area::handle_text_area;
-use rustubble::TextArea;
+use rustubble::text_area::TextArea;
 use std::io::stdout;
 
 fn main() -> std::io::Result<()> {

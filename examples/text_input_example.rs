@@ -6,7 +6,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType},
 };
 
-use rustubble::{input::handle_input, TextInput}; // Adjust the import path based on your lib structure
+use rustubble::{input::handle_input, input::TextInput}; // Adjust the import path based on your lib structure
 
 fn main() {
     enable_raw_mode().unwrap();
