@@ -2,6 +2,12 @@
 name = "rustubble"
 version = "0.1.0"
 edition = "2021"
+authors = ["Lucas Oliveira <jucas.oliveira@gmail.com>"]  # List of crate authors.
+description = "A brief description of what your crate does."
+license = "Apache-2.0"    
+repository = "https://github.com/warpy-ai/rustubble"
+keywords = ["cli", "terminal"] # arbitrary keywords
+categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
