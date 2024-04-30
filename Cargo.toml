@@ -1,17 +1,18 @@
 [package]
 name = "rustubble"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
-authors = ["Lucas Oliveira <jucas.oliveira@gmail.com>"]  # List of crate authors.
+authors = ["Lucas Oliveira <jucas.oliveira@gmail.com>"]      # List of crate authors.
 description = "A brief description of what your crate does."
-license = "Apache-2.0"    
+license = "Apache-2.0"
 repository = "https://github.com/warpy-ai/rustubble"
-keywords = ["cli", "terminal"] # arbitrary keywords
+keywords = ["cli", "terminal"]                               # arbitrary keywords
 categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-crossterm = "0.27"             # or another version, check crates.io for the latest
+crossterm = "0.27"
 lazy_static = "1.4.0"
 maplit = { version = "1.0.2" }
-textwrap ={ version = "0.16.0", features = ["terminal_size"] }
+textwrap = { version = "0.16.0", features = ["terminal_size"] }
+ratatui = "0.26.2"
