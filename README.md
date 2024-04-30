@@ -15,6 +15,8 @@ This project aims to provide a set of components that can be used in your termin
 - [Spinner Component](#spinner-component)
 - [Table Component](#table-component)
 - [Progress bar Component](#progress-bar-component)
+- [Timer Component](#timer-component)
+- [Stopwatch Component](#stopwatch-component)
 
 # TextInput Component
 
