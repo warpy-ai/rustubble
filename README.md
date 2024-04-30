@@ -137,7 +137,7 @@ The `ViewPort` component allows you to create a viewport in your terminal applic
 
 - [Example Code](https://github.com/warpy-ai/rustubble/blob/main/examples/viewport_example.rs)
 
-# StopWatch
+# StopWatch Component
 
 A simple component for counting down.
 
@@ -147,7 +147,7 @@ A simple component for counting down.
 
 - [Example Code](https://github.com/warpy-ai/rustubble/blob/main/examples/stopwatch_example.rs)
 
-# Timer
+# Timer Component
 
 A simple component for counting up.
 
