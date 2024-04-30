@@ -1,6 +1,6 @@
 [package]
 name = "rustubble"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Lucas Oliveira <jucas.oliveira@gmail.com>"]      # List of crate authors.
 description = "A brief description of what your crate does."
