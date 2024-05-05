@@ -1,6 +1,6 @@
 use std::io;
 
-use crossterm::event::{self, Event, KeyCode, KeyEvent};
+use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
     backend::{Backend, CrosstermBackend},
     layout::{Alignment, Constraint, Direction, Layout, Rect},
@@ -164,21 +164,42 @@ impl ItemList {
             .draw(|f| {
                 let chunks = Layout::default()
                     .direction(Direction::Vertical)
-                    .margin(1)
                     .constraints(
                         [
-                            Constraint::Length(3), // Space for the input
-                            Constraint::Min(10),   // Space for the list
+                            Constraint::Length(if self.showing_filter { 3 } else { 0 }),
+                            Constraint::Min(10),
                         ]
                         .as_ref(),
                     )
-                    .split(padded_rect);
+                    .split(rect);
 
                 if self.showing_filter {
                     let input = Paragraph::new(self.filter.as_str())
-                        .block(Block::default().borders(Borders::ALL).title("Filter"));
+                        .block(Block::default().borders(Borders::NONE).title("Filter"));
                     f.render_widget(input, chunks[0]);
                 }
+
+                let items: Vec<ListItem> = self
+                    .filtered_items
+                    .iter()
+                    .map(ItemList::create_custom_list_item)
+                    .collect();
+
+                let list = List::new(items)
+                    .block(
+                        Block::default()
+                            .title(self.title.as_str())
+                            .title_alignment(Alignment::Left)
+                            .borders(Borders::NONE)
+                            .padding(Padding::new(0, 1, 1, 0)),
+                    )
+                    .highlight_style(
+                        Style::default()
+                            .fg(Color::LightMagenta)
+                            .add_modifier(Modifier::BOLD),
+                    )
+                    .highlight_symbol("│ ")
+                    .repeat_highlight_symbol(true);
 
                 f.render_stateful_widget(list, chunks[1], &mut self.state.clone());
             })
@@ -186,7 +207,7 @@ impl ItemList {
     }
 }
 
-pub fn handle_list(list: &mut ItemList, x: u16, y: u16) {
+pub fn handle_list(list: &mut ItemList, x: u16, y: u16) -> Option<String> {
     let stdout = io::stdout();
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend).unwrap();
@@ -195,12 +216,22 @@ pub fn handle_list(list: &mut ItemList, x: u16, y: u16) {
         terminal.clear().unwrap();
         list.render(&mut terminal, Rect::new(x, y, 40, 110));
 
-        if let Event::Key(KeyEvent { code, .. }) = event::read().unwrap() {
+        if let Event::Key(KeyEvent {
+            code, modifiers, ..
+        }) = event::read().unwrap()
+        {
+            if modifiers.contains(KeyModifiers::CONTROL) && code == KeyCode::Char('c') {
+                return None;
+            }
             match code {
                 KeyCode::Char('/') => list.showing_filter = !list.showing_filter,
-                KeyCode::Char('q') => break,
+                KeyCode::Esc => list.showing_filter = !list.showing_filter,
+                KeyCode::Char('q') => return None,
                 KeyCode::Down => list.next(),
                 KeyCode::Up => list.previous(),
+                KeyCode::Enter => {
+                    return Some(list.filtered_items[list.state.selected()?].title.clone())
+                }
                 KeyCode::Char(c) if list.showing_filter => {
                     list.filter.push(c);
                     list.update_filter();

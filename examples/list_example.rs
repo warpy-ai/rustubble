@@ -32,7 +32,9 @@ fn main() -> Result<(), io::Error> {
     );
 
     let (x, y) = (5, 5);
-    handle_list(&mut list, x, y);
+    let list = handle_list(&mut list, x, y);
+
+    println!("Operation completed.{:?}", list);
 
     disable_raw_mode()
 }
