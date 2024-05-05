@@ -140,19 +140,27 @@ impl ItemList {
             .draw(|f| {
                 let chunks = Layout::default()
                     .direction(Direction::Vertical)
-                    .constraints(
-                        [
-                            Constraint::Length(if self.showing_filter { 3 } else { 0 }),
-                            Constraint::Min(10),
-                        ]
-                        .as_ref(),
-                    )
+                    .constraints([Constraint::Length(3), Constraint::Min(10)].as_ref())
                     .split(rect);
 
+                //TODO: add title widget on chunk[0]
+
+                if !self.showing_filter {
+                    let title_widget = Paragraph::new(self.title.as_str())
+                        .block(Block::default().borders(Borders::NONE));
+                    f.render_widget(title_widget, chunks[0]);
+                }
+
                 if self.showing_filter {
-                    let input = Paragraph::new(self.filter.as_str())
-                        .block(Block::default().borders(Borders::NONE).title("Filter"));
+                    let input = Paragraph::new(format!("Filter: {}", self.filter))
+                        .block(Block::default().borders(Borders::NONE));
                     f.render_widget(input, chunks[0]);
+
+                    let cursor_pos = 8 + self.filter.len() as u16; // "Filter: " is 7 chars + 1 space
+                    f.set_cursor(chunks[0].x + cursor_pos, chunks[0].y); // +1 because the text starts one line down in the block
+
+                    // Ensure the cursor is visible
+                    // terminal.backend_mut().execute(Show).unwrap();
                 }
 
                 let items: Vec<ListItem> = self
@@ -162,13 +170,7 @@ impl ItemList {
                     .collect();
 
                 let list = List::new(items)
-                    .block(
-                        Block::default()
-                            .title(self.title.as_str())
-                            .title_alignment(Alignment::Left)
-                            .borders(Borders::NONE)
-                            .padding(Padding::new(0, 1, 1, 0)),
-                    )
+                    .block(Block::default().title("").borders(Borders::NONE))
                     .highlight_style(
                         Style::default()
                             .fg(Color::LightMagenta)
