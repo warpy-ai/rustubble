@@ -152,15 +152,13 @@ impl ItemList {
                 }
 
                 if self.showing_filter {
-                    let input = Paragraph::new(format!("Filter: {}", self.filter))
+                    let filter_title = "Filter:";
+                    let input = Paragraph::new(format!("{} {}", filter_title, self.filter))
                         .block(Block::default().borders(Borders::NONE));
                     f.render_widget(input, chunks[0]);
 
-                    let cursor_pos = 8 + self.filter.len() as u16; // "Filter: " is 7 chars + 1 space
+                    let cursor_pos = filter_title.len() as u16 + 1 + self.filter.len() as u16; // "Filter: " is 7 chars + 1 space
                     f.set_cursor(chunks[0].x + cursor_pos, chunks[0].y); // +1 because the text starts one line down in the block
-
-                    // Ensure the cursor is visible
-                    // terminal.backend_mut().execute(Show).unwrap();
                 }
 
                 let items: Vec<ListItem> = self
