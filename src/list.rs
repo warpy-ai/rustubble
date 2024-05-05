@@ -3,17 +3,14 @@ use std::io;
 use crossterm::event::{self, Event, KeyCode, KeyEvent};
 use ratatui::{
     backend::{Backend, CrosstermBackend},
-    layout::{Alignment, Rect},
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span, Text},
-    widgets::{
-        Block, Borders, HighlightSpacing, List, ListItem, ListState, Padding, Paragraph, Wrap,
-    },
+    widgets::{Block, Borders, List, ListItem, ListState, Padding, Paragraph},
     Terminal,
 };
 
-use crate::colors;
-
+#[derive(Clone)]
 pub struct Item {
     pub title: String,
     pub subtitle: String,
@@ -21,8 +18,11 @@ pub struct Item {
 
 pub struct ItemList {
     title: String,
+    filtered_items: Vec<Item>,
     items: Vec<Item>,
     state: ListState,
+    filter: String,
+    showing_filter: bool,
 }
 
 impl ItemList {
@@ -32,8 +32,11 @@ impl ItemList {
 
         Self {
             title,
-            items,
+            items: items.clone(),
+            filtered_items: items,
             state,
+            filter: String::new(),
+            showing_filter: false,
         }
     }
 
@@ -71,6 +74,24 @@ impl ItemList {
         } else {
             None
         }
+    }
+
+    pub fn update_filter(&mut self) {
+        if self.filter.is_empty() {
+            self.filtered_items = self.items.clone();
+        } else {
+            self.filtered_items = self
+                .items
+                .iter()
+                .filter(|item| {
+                    item.title
+                        .to_lowercase()
+                        .contains(&self.filter.to_lowercase())
+                })
+                .cloned()
+                .collect();
+        }
+        self.state.select(Some(0)); // Reset selection
     }
 
     pub fn create_custom_list_item(item: &Item) -> ListItem {
@@ -141,7 +162,25 @@ impl ItemList {
 
         terminal
             .draw(|f| {
-                f.render_stateful_widget(list, padded_rect, &mut self.state.clone());
+                let chunks = Layout::default()
+                    .direction(Direction::Vertical)
+                    .margin(1)
+                    .constraints(
+                        [
+                            Constraint::Length(3), // Space for the input
+                            Constraint::Min(10),   // Space for the list
+                        ]
+                        .as_ref(),
+                    )
+                    .split(padded_rect);
+
+                if self.showing_filter {
+                    let input = Paragraph::new(self.filter.as_str())
+                        .block(Block::default().borders(Borders::ALL).title("Filter"));
+                    f.render_widget(input, chunks[0]);
+                }
+
+                f.render_stateful_widget(list, chunks[1], &mut self.state.clone());
             })
             .unwrap();
     }
@@ -151,15 +190,25 @@ pub fn handle_list(list: &mut ItemList, x: u16, y: u16) {
     let stdout = io::stdout();
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend).unwrap();
+
     loop {
         terminal.clear().unwrap();
-        list.render(&mut terminal, Rect::new(x, y, 40, 100));
+        list.render(&mut terminal, Rect::new(x, y, 40, 110));
 
         if let Event::Key(KeyEvent { code, .. }) = event::read().unwrap() {
             match code {
+                KeyCode::Char('/') => list.showing_filter = !list.showing_filter,
                 KeyCode::Char('q') => break,
                 KeyCode::Down => list.next(),
                 KeyCode::Up => list.previous(),
+                KeyCode::Char(c) if list.showing_filter => {
+                    list.filter.push(c);
+                    list.update_filter();
+                }
+                KeyCode::Backspace if list.showing_filter => {
+                    list.filter.pop();
+                    list.update_filter();
+                }
                 _ => {}
             }
         }
