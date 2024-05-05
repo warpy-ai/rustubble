@@ -136,30 +136,6 @@ impl ItemList {
     }
 
     pub fn render<B: Backend>(&self, terminal: &mut Terminal<B>, rect: Rect) {
-        let items: Vec<ListItem> = self
-            .items
-            .iter()
-            .map(|item| ItemList::create_custom_list_item(item))
-            .collect();
-
-        let list = List::new(items)
-            .block(
-                Block::default()
-                    .title(self.title.as_str())
-                    .title_alignment(Alignment::Left)
-                    .borders(Borders::NONE)
-                    .padding(Padding::new(0, 1, 1, 0)),
-            )
-            .highlight_style(
-                Style::default()
-                    .fg(Color::LightMagenta)
-                    .add_modifier(Modifier::BOLD),
-            )
-            .highlight_symbol("│ ")
-            .repeat_highlight_symbol(true);
-
-        let padded_rect = Rect::new(rect.x, rect.y + 2, rect.width, rect.height - 2);
-
         terminal
             .draw(|f| {
                 let chunks = Layout::default()
