@@ -1,4 +1,6 @@
 pub mod colors;
+pub mod command;
+pub mod help;
 pub mod helper;
 pub mod input;
 pub mod list;

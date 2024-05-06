@@ -6,8 +6,13 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span, Text},
-    widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
+    widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Widget},
     Terminal,
+};
+
+use crate::{
+    command::{self, CommandInfo},
+    help::HelpComponent,
 };
 
 #[derive(Clone)]
@@ -135,12 +140,24 @@ impl ItemList {
         ListItem::new(text)
     }
 
-    pub fn render<B: Backend>(&self, terminal: &mut Terminal<B>, rect: Rect) {
+    pub fn render<B: Backend>(
+        &self,
+        terminal: &mut Terminal<B>,
+        rect: Rect,
+        help_component: &mut HelpComponent,
+    ) {
         terminal
             .draw(|f| {
                 let chunks = Layout::default()
                     .direction(Direction::Vertical)
-                    .constraints([Constraint::Length(3), Constraint::Min(10)].as_ref())
+                    .constraints(
+                        [
+                            Constraint::Length(3),
+                            Constraint::Percentage(50),
+                            Constraint::Length(3),
+                        ]
+                        .as_ref(),
+                    )
                     .split(rect);
 
                 //TODO: add title widget on chunk[0]
@@ -178,6 +195,8 @@ impl ItemList {
                     .repeat_highlight_symbol(true);
 
                 f.render_stateful_widget(list, chunks[1], &mut self.state.clone());
+
+                f.render_widget(help_component.clone(), chunks[2])
             })
             .unwrap();
     }
@@ -190,17 +209,46 @@ pub fn handle_list(list: &mut ItemList, x: u16, y: u16) -> Option<String> {
 
     loop {
         terminal.clear().unwrap();
-        list.render(&mut terminal, Rect::new(x, y, 40, 110));
+
+        let commands = vec![
+            CommandInfo::new(KeyCode::Char('c'), KeyModifiers::CONTROL),
+            CommandInfo::new(KeyCode::Char('q'), KeyModifiers::NONE),
+            CommandInfo::new(KeyCode::Char('/'), KeyModifiers::NONE),
+            CommandInfo::new(KeyCode::Enter, KeyModifiers::NONE),
+            CommandInfo::new(KeyCode::Down, KeyModifiers::NONE),
+            CommandInfo::new(KeyCode::Up, KeyModifiers::NONE),
+        ];
+
+        let filter_commands = vec![
+            CommandInfo::new(KeyCode::Esc, KeyModifiers::NONE),
+            CommandInfo::new(KeyCode::Enter, KeyModifiers::NONE),
+        ];
+
+        let mut help_component = HelpComponent::new(commands, filter_commands);
+
+        if list.showing_filter {
+            help_component.activate_filter_mode();
+        } else {
+            help_component.deactivate_filter_mode();
+        }
+
+        list.render(
+            &mut terminal,
+            Rect::new(x, y, 40, 50),
+            &mut help_component.clone(),
+        );
 
         if let Event::Key(KeyEvent {
             code, modifiers, ..
         }) = event::read().unwrap()
         {
-            if modifiers.contains(KeyModifiers::CONTROL) && code == KeyCode::Char('c') {
-                return None;
-            }
             match code {
-                KeyCode::Char('/') => list.showing_filter = !list.showing_filter,
+                KeyCode::Char('c') if modifiers.contains(KeyModifiers::CONTROL) => {
+                    return None;
+                }
+                KeyCode::Char('/') => {
+                    list.showing_filter = !list.showing_filter;
+                }
                 KeyCode::Esc => list.showing_filter = !list.showing_filter,
                 KeyCode::Char('q') => return None,
                 KeyCode::Down => list.next(),
@@ -219,6 +267,7 @@ pub fn handle_list(list: &mut ItemList, x: u16, y: u16) -> Option<String> {
                 _ => {}
             }
         }
+        list.render(&mut terminal, Rect::new(x, y, 40, 50), &mut help_component);
     }
 }
 
