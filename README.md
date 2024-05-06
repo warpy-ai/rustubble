@@ -157,6 +157,16 @@ A simple component for counting up.
 
 - [Example Code](https://github.com/warpy-ai/rustubble/blob/main/examples/timer_example.rs)
 
+# List Component
+
+![list](https://github.com/warpy-ai/rustubble/blob/main/assets/list.gif)
+
+A list component, build with ratatui.
+
+## Usage
+
+- [Example Code](https://github.com/warpy-ai/rustubble/blob/main/examples/list_example.rs)
+
 ## Contribution
 
 Contributions are welcome! If you have suggestions for improving the spinner or adding new styles, please open an issue or pull request on our GitHub repository.
