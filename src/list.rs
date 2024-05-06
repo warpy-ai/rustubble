@@ -221,3 +221,90 @@ pub fn handle_list(list: &mut ItemList, x: u16, y: u16) -> Option<String> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn initializes_correctly() {
+        let items = vec![
+            Item {
+                title: "Pocky".into(),
+                subtitle: "Expensive".into(),
+            },
+            Item {
+                title: "Ginger".into(),
+                subtitle: "Exquisite".into(),
+            },
+        ];
+        let list = ItemList::new("Groceries".into(), items);
+        assert_eq!(list.state.selected(), Some(0));
+    }
+
+    #[test]
+    fn navigates_correctly() {
+        let items = vec![
+            Item {
+                title: "Pocky".into(),
+                subtitle: "Expensive".into(),
+            },
+            Item {
+                title: "Ginger".into(),
+                subtitle: "Exquisite".into(),
+            },
+        ];
+        let mut list = ItemList::new("Groceries".into(), items.clone());
+
+        list.next();
+        assert_eq!(list.state.selected(), Some(1));
+        list.next();
+        assert_eq!(list.state.selected(), Some(0)); // Loop back to the start
+        list.previous();
+        assert_eq!(list.state.selected(), Some(1)); // Loop to the end
+    }
+
+    #[test]
+    fn filters_items() {
+        let items = vec![
+            Item {
+                title: "Pocky".into(),
+                subtitle: "Expensive".into(),
+            },
+            Item {
+                title: "Ginger".into(),
+                subtitle: "Exquisite".into(),
+            },
+        ];
+        let mut list = ItemList::new("Groceries".into(), items.clone());
+
+        list.filter = "Ginger".to_string();
+        list.update_filter();
+        assert_eq!(list.filtered_items.len(), 1);
+        assert_eq!(list.filtered_items[0].title, "Ginger");
+
+        list.filter = "Pocky".to_string();
+        list.update_filter();
+        assert_eq!(list.filtered_items.len(), 1);
+        assert_eq!(list.filtered_items[0].title, "Pocky");
+    }
+
+    #[test]
+    fn selects_item_correctly() {
+        let items = vec![
+            Item {
+                title: "Pocky".into(),
+                subtitle: "Expensive".into(),
+            },
+            Item {
+                title: "Ginger".into(),
+                subtitle: "Exquisite".into(),
+            },
+        ];
+        let mut list = ItemList::new("Groceries".into(), items.clone());
+
+        list.next(); // Move to second item
+        let selected = list.get_selected_item();
+        assert!(matches!(selected, Some(item) if item.title == "Ginger"));
+    }
+}
