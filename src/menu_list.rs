@@ -216,12 +216,41 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_menu_list() {
-        let mut menu = Menu::new("Title".to_string(), "Subtitle".to_string(), vec![]);
+    fn initializes_correctly() {
+        let menu = Menu::new("Title".to_string(), "Subtitle".to_string(), vec![]);
+        assert_eq!(menu.selection_state.selected(), Some(0));
+    }
+
+    #[test]
+    fn navigates_correctly() {
+        let mut menu = Menu::new(
+            "Title".to_string(),
+            "Subtitle".to_string(),
+            vec![
+                "Option 1".to_string(),
+                "Option 2".to_string(),
+                "Option 3".to_string(),
+            ],
+        );
         menu.up();
+        assert_eq!(menu.selection_state.selected(), Some(2));
+
         menu.down();
+        assert_eq!(menu.selection_state.selected(), Some(0));
+
+        menu.down();
+        assert_eq!(menu.selection_state.selected(), Some(1));
+    }
+
+    #[test]
+    fn selects_item_correctly() {
+        let mut menu = Menu::new(
+            "Title".to_string(),
+            "Subtitle".to_string(),
+            vec!["Option 1".to_string()],
+        );
         menu.toggle_selection();
 
-        assert_eq!(menu.selection_state.selected(), Some(0));
+        assert_eq!(menu.items[0].selected, true);
     }
 }
