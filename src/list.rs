@@ -11,7 +11,7 @@ use ratatui::{
 };
 
 use crate::{
-    command::{self, CommandInfo},
+    command::{CommandInfo},
     help::HelpComponent,
 };
 

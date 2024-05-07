@@ -1,5 +1,5 @@
 use crossterm::{
-    cursor::MoveTo, event::{self, Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind}, execute, style::Print, terminal::{self, Clear, ClearType}
+    cursor::MoveTo, event::{self, Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind}, execute, style::Print, terminal::{Clear, ClearType}
 };
 use textwrap::{wrap, Options};
 use std::io::{stdout, Write};

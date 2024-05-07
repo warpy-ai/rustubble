@@ -2,7 +2,7 @@ use crossterm::cursor::MoveTo;
 use crossterm::event::{read, Event, KeyCode, KeyEvent, KeyModifiers};
 use crossterm::style::{Color, Print, ResetColor};
 use crossterm::terminal::{Clear, ClearType};
-use crossterm::{execute, style};
+use crossterm::{execute};
 use lazy_static::lazy_static;
 use maplit::{self, hashmap};
 use std::collections::HashMap;
