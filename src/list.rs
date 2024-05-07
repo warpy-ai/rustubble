@@ -152,7 +152,7 @@ impl ItemList {
                     .direction(Direction::Vertical)
                     .constraints(
                         [
-                            Constraint::Length(3),
+                            Constraint::Length(1),
                             Constraint::Percentage(50),
                             Constraint::Length(3),
                         ]
@@ -249,7 +249,7 @@ pub fn handle_list(list: &mut ItemList, x: u16, y: u16) -> Option<String> {
                 KeyCode::Char('/') => {
                     list.showing_filter = !list.showing_filter;
                 }
-                KeyCode::Esc => list.showing_filter = !list.showing_filter,
+                KeyCode::Esc => list.showing_filter = false,
                 KeyCode::Char('q') => return None,
                 KeyCode::Down => list.next(),
                 KeyCode::Up => list.previous(),

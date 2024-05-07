@@ -27,7 +27,31 @@ fn main() -> Result<(), io::Error> {
             Item {
                 title: "Bicoin".to_string(),
                 subtitle: "Cheap".to_string(),
-            }, // Add more items
+            },
+            Item {
+                title: "Coke".to_string(),
+                subtitle: "Cheap".to_string(),
+            },
+            Item {
+                title: "Sprite".to_string(),
+                subtitle: "Cheap".to_string(),
+            },
+            Item {
+                title: "Sprite".to_string(),
+                subtitle: "Cheap".to_string(),
+            },
+            Item {
+                title: "Sprite".to_string(),
+                subtitle: "Cheap".to_string(),
+            },
+            Item {
+                title: "Sprite".to_string(),
+                subtitle: "Cheap".to_string(),
+            },
+            Item {
+                title: "Sprite".to_string(),
+                subtitle: "Cheap".to_string(),
+            },
         ],
     );
 
