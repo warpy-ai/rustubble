@@ -210,3 +210,18 @@ pub fn handle_menu_list(menu: &mut Menu, x: u16, y: u16) -> Option<String> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_menu_list() {
+        let mut menu = Menu::new("Title".to_string(), "Subtitle".to_string(), vec![]);
+        menu.up();
+        menu.down();
+        menu.toggle_selection();
+
+        assert_eq!(menu.selection_state.selected(), Some(0));
+    }
+}
