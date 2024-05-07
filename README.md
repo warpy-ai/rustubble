@@ -17,6 +17,9 @@ This project aims to provide a set of components that can be used in your termin
 - [Progress bar Component](#progress-bar-component)
 - [Timer Component](#timer-component)
 - [Stopwatch Component](#stopwatch-component)
+- [Viewport Component](#viewport-component)
+- [List Component](#list-component)
+- [MenuList Component](#menulist-component)
 
 # TextInput Component
 
@@ -166,6 +169,16 @@ A list component, build with ratatui.
 ## Usage
 
 - [Example Code](https://github.com/warpy-ai/rustubble/blob/main/examples/list_example.rs)
+
+# MenuList Component
+
+![menulist](https://github.com/warpy-ai/rustubble/blob/main/assets/menulist.gif)
+
+A menu list component, build with ratatui.
+
+## Usage
+
+- [Example Code](https://github.com/warpy-ai/rustubble/blob/main/examples/menu_list_example.rs)
 
 ## Contribution
 

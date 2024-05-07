@@ -39,10 +39,10 @@ impl Command {
             Command::Delete => "del",
             Command::Help => "h",
             Command::ControlC => "cntrl+c",
-            Command::Enter => "\u{2B90}",
+            Command::Enter => "\u{2B90} ",
             Command::Filter => "/",
-            Command::Up => "\u{2191}/h",
-            Command::Down => "\u{2193}/l",
+            Command::Up => "\u{2191}/k",
+            Command::Down => "\u{2193}/j",
             // Additional commands
         }
     }
