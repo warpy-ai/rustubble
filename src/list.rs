@@ -10,10 +10,7 @@ use ratatui::{
     Terminal,
 };
 
-use crate::{
-    command::{CommandInfo},
-    help::HelpComponent,
-};
+use crate::{command::CommandInfo, help::HelpComponent};
 
 #[derive(Clone)]
 pub struct Item {
@@ -202,7 +199,7 @@ impl ItemList {
     }
 }
 
-pub fn handle_list(list: &mut ItemList, x: u16, y: u16) -> Option<String> {
+pub fn handle_list(list: &mut ItemList, _x: u16, _y: u16) -> Option<String> {
     let stdout = io::stdout();
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend).unwrap();
@@ -232,11 +229,8 @@ pub fn handle_list(list: &mut ItemList, x: u16, y: u16) -> Option<String> {
             help_component.deactivate_filter_mode();
         }
 
-        list.render(
-            &mut terminal,
-            Rect::new(x, y, 40, 50),
-            &mut help_component.clone(),
-        );
+        let size = terminal.size().unwrap();
+        list.render(&mut terminal, size, &mut help_component.clone());
 
         if let Event::Key(KeyEvent {
             code, modifiers, ..
@@ -267,7 +261,7 @@ pub fn handle_list(list: &mut ItemList, x: u16, y: u16) -> Option<String> {
                 _ => {}
             }
         }
-        list.render(&mut terminal, Rect::new(x, y, 40, 50), &mut help_component);
+        list.render(&mut terminal, size, &mut help_component);
     }
 }
 
