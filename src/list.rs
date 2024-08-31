@@ -1,19 +1,13 @@
-use std::io;
-
+use crate::command::CommandInfo;
+use crate::help::HelpComponent;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
-    backend::{Backend, CrosstermBackend},
-    layout::{Constraint, Direction, Layout, Rect},
+    prelude::*,
     style::{Color, Modifier, Style},
-    text::{Line, Span, Text},
-    widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Widget},
-    Terminal,
+    text::{Line, Span},
+    widgets::{Block, List, ListItem, ListState},
 };
-
-use crate::{
-    command::{CommandInfo},
-    help::HelpComponent,
-};
+use std::io;
 
 #[derive(Clone)]
 pub struct Item {
@@ -22,38 +16,117 @@ pub struct Item {
 }
 
 pub struct ItemList {
-    title: String,
-    filtered_items: Vec<Item>,
-    items: Vec<Item>,
+    pub title: String,
+    pub items: Vec<Item>,
     state: ListState,
-    filter: String,
-    showing_filter: bool,
+    pub filter: String,
+    filtered_items: Vec<Item>,
+    pub showing_filter: bool,
 }
 
 impl ItemList {
     pub fn new(title: String, items: Vec<Item>) -> Self {
         let mut state = ListState::default();
-        state.select(Some(0)); // Initialize the cursor at the first item
-
-        Self {
+        state.select(Some(0));
+        ItemList {
             title,
             items: items.clone(),
-            filtered_items: items,
             state,
             filter: String::new(),
+            filtered_items: items,
             showing_filter: false,
         }
     }
 
+    // Add these methods
+    pub fn update_filter(&mut self) {
+        self.filtered_items = self
+            .items
+            .iter()
+            .filter(|item| {
+                item.title
+                    .to_lowercase()
+                    .contains(&self.filter.to_lowercase())
+            })
+            .cloned()
+            .collect();
+        self.state.select(Some(0));
+    }
+
+    pub fn get_selected_item(&self) -> Option<&Item> {
+        self.state
+            .selected()
+            .and_then(|i| self.filtered_items.get(i))
+    }
+    // Update the render method
+    pub fn render(&mut self, f: &mut Frame, area: Rect) {
+        println!("Rendering ItemList"); // Debug print
+        println!("showing_filter: {}", self.showing_filter); // Debug print
+        println!("filter: {}", self.filter); // Debug print
+
+        let items: Vec<ListItem> = self
+            .filtered_items
+            .iter()
+            .enumerate()
+            .map(|(index, i)| {
+                let (title_style, subtitle_style, prefix) = if Some(index) == self.state.selected()
+                {
+                    (
+                        Style::default()
+                            .fg(Color::Magenta)
+                            .add_modifier(Modifier::BOLD),
+                        Style::default().fg(Color::Magenta).italic(),
+                        "│",
+                    )
+                } else {
+                    (
+                        Style::default().fg(Color::White),
+                        Style::default().fg(Color::Gray),
+                        " ",
+                    )
+                };
+
+                ListItem::new(vec![
+                    Line::from(vec![Span::raw(prefix)]), // Top padding (reduced to 1 line)
+                    Line::from(vec![
+                        Span::raw(prefix),
+                        Span::raw(" "),
+                        Span::styled(&i.title, title_style),
+                    ]),
+                    Line::from(vec![
+                        Span::raw(prefix),
+                        Span::raw(" "),
+                        Span::styled(&i.subtitle, subtitle_style),
+                    ]),
+                    Line::from(vec![Span::raw(prefix)]), // Bottom padding (reduced to 1 line)
+                ])
+            })
+            .collect();
+
+        let list = List::new(items)
+            .highlight_style(Style::default())
+            .highlight_symbol("");
+
+        let mut block = Block::default().padding(ratatui::widgets::Padding::new(2, 2, 1, 1));
+
+        // Update this part to show the filter
+        let title = if self.showing_filter {
+            format!("{} | Filter: {}", self.title, self.filter)
+        } else {
+            self.title.clone()
+        };
+
+        println!("Block title: {}", title); // Debug print
+
+        block = block.title(title);
+
+        let padded_list = list.block(block);
+        f.render_stateful_widget(padded_list, area, &mut self.state);
+    } // Add this closing brace
+
     pub fn next(&mut self) {
         let i = match self.state.selected() {
-            Some(i) => {
-                if i >= self.items.len() - 1 {
-                    0
-                } else {
-                    i + 1
-                }
-            }
+            Some(i) => (i + 1) % self.filtered_items.len(),
             None => 0,
         };
         self.state.select(Some(i));
@@ -61,144 +134,10 @@ impl ItemList {
 
     pub fn previous(&mut self) {
         let i = match self.state.selected() {
-            Some(i) => {
-                if i == 0 {
-                    self.items.len() - 1
-                } else {
-                    i - 1
-                }
-            }
+            Some(i) => (i + self.filtered_items.len() - 1) % self.filtered_items.len(),
             None => 0,
         };
         self.state.select(Some(i));
-    }
-
-    pub fn get_selected_item(&self) -> Option<&Item> {
-        if let Some(selected) = self.state.selected() {
-            self.items.get(selected)
-        } else {
-            None
-        }
-    }
-
-    pub fn update_filter(&mut self) {
-        if self.filter.is_empty() {
-            self.filtered_items = self.items.clone();
-        } else {
-            self.filtered_items = self
-                .items
-                .iter()
-                .filter(|item| {
-                    item.title
-                        .to_lowercase()
-                        .contains(&self.filter.to_lowercase())
-                })
-                .cloned()
-                .collect();
-        }
-        self.state.select(Some(0)); // Reset selection
-    }
-
-    pub fn create_custom_list_item(item: &Item) -> ListItem {
-        // Use '\n' to ensure titles and subtitles are on separate lines
-        // and ensure that each line is treated as a separate span
-        let lines = vec![
-            Span::styled(
-                " ",
-                Style::default()
-                    .fg(Color::Gray) // Subtitle can have a different style or color
-                    .add_modifier(Modifier::ITALIC),
-            ),
-            Span::styled(
-                &item.title,
-                Style::default()
-                    .fg(Color::White) // You might adjust color and style as needed
-                    .add_modifier(Modifier::BOLD),
-            ),
-            Span::styled(
-                &item.subtitle,
-                Style::default()
-                    .fg(Color::Gray) // Subtitle can have a different style or color
-                    .add_modifier(Modifier::ITALIC),
-            ),
-            Span::styled(
-                " ",
-                Style::default()
-                    .fg(Color::Gray) // Subtitle can have a different style or color
-                    .add_modifier(Modifier::ITALIC),
-            ),
-        ];
-
-        // Convert Vec<Span> to Text by wrapping each Span in a Line
-        let text = Text::from(
-            lines
-                .iter()
-                .map(|span| Line::from(vec![span.clone()]))
-                .collect::<Vec<_>>(),
-        );
-
-        ListItem::new(text)
-    }
-
-    pub fn render<B: Backend>(
-        &self,
-        terminal: &mut Terminal<B>,
-        rect: Rect,
-        help_component: &mut HelpComponent,
-    ) {
-        terminal
-            .draw(|f| {
-                let chunks = Layout::default()
-                    .direction(Direction::Vertical)
-                    .constraints(
-                        [
-                            Constraint::Length(1),
-                            Constraint::Percentage(50),
-                            Constraint::Length(3),
-                        ]
-                        .as_ref(),
-                    )
-                    .split(rect);
-
-                //TODO: add title widget on chunk[0]
-
-                if !self.showing_filter {
-                    let title_widget = Paragraph::new(self.title.as_str())
-                        .block(Block::default().borders(Borders::NONE));
-                    f.render_widget(title_widget, chunks[0]);
-                }
-
-                if self.showing_filter {
-                    let filter_title = "Filter:";
-                    let input = Paragraph::new(format!("{} {}", filter_title, self.filter))
-                        .block(Block::default().borders(Borders::NONE));
-                    f.render_widget(input, chunks[0]);
-
-                    let cursor_pos = filter_title.len() as u16 + 1 + self.filter.len() as u16; // "Filter: " is 7 chars + 1 space
-                    f.set_cursor(chunks[0].x + cursor_pos, chunks[0].y); // +1 because the text starts one line down in the block
-                }
-
-                let items: Vec<ListItem> = self
-                    .filtered_items
-                    .iter()
-                    .map(ItemList::create_custom_list_item)
-                    .collect();
-
-                let list = List::new(items)
-                    .block(Block::default().title("").borders(Borders::NONE))
-                    .highlight_style(
-                        Style::default()
-                            .fg(Color::LightMagenta)
-                            .add_modifier(Modifier::BOLD),
-                    )
-                    .highlight_symbol("│ ")
-                    .repeat_highlight_symbol(true);
-
-                f.render_stateful_widget(list, chunks[1], &mut self.state.clone());
-
-                f.render_widget(help_component.clone(), chunks[2])
-            })
-            .unwrap();
     }
 }
 
@@ -207,55 +146,62 @@ pub fn handle_list(list: &mut ItemList, x: u16, y: u16) -> Option<String> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend).unwrap();
 
-    loop {
-        terminal.clear().unwrap();
+    crossterm::terminal::enable_raw_mode().unwrap();
 
-        let commands = vec![
-            CommandInfo::new(KeyCode::Char('c'), KeyModifiers::CONTROL),
-            CommandInfo::new(KeyCode::Char('q'), KeyModifiers::NONE),
-            CommandInfo::new(KeyCode::Char('/'), KeyModifiers::NONE),
-            CommandInfo::new(KeyCode::Enter, KeyModifiers::NONE),
-            CommandInfo::new(KeyCode::Down, KeyModifiers::NONE),
-            CommandInfo::new(KeyCode::Up, KeyModifiers::NONE),
-        ];
+    let commands = vec![
+        CommandInfo::new(KeyCode::Char('c'), KeyModifiers::CONTROL),
+        CommandInfo::new(KeyCode::Char('q'), KeyModifiers::NONE),
+        CommandInfo::new(KeyCode::Char('/'), KeyModifiers::NONE),
+        CommandInfo::new(KeyCode::Enter, KeyModifiers::NONE),
+        CommandInfo::new(KeyCode::Down, KeyModifiers::NONE),
+        CommandInfo::new(KeyCode::Up, KeyModifiers::NONE),
+    ];
 
-        let filter_commands = vec![
-            CommandInfo::new(KeyCode::Esc, KeyModifiers::NONE),
-            CommandInfo::new(KeyCode::Enter, KeyModifiers::NONE),
-        ];
+    let filter_commands = vec![
+        CommandInfo::new(KeyCode::Esc, KeyModifiers::NONE),
+        CommandInfo::new(KeyCode::Enter, KeyModifiers::NONE),
+    ];
 
-        let mut help_component = HelpComponent::new(commands, filter_commands);
+    let mut help_component = HelpComponent::new(commands, filter_commands);
 
-        if list.showing_filter {
-            help_component.activate_filter_mode();
-        } else {
-            help_component.deactivate_filter_mode();
-        }
+    let result = loop {
+        terminal
+            .draw(|f| {
+                let chunks = Layout::default()
+                    .direction(Direction::Vertical)
+                    .constraints([Constraint::Min(3), Constraint::Length(3)].as_ref())
+                    .split(f.size());
 
-        list.render(
-            &mut terminal,
-            Rect::new(x, y, 40, 50),
-            &mut help_component.clone(),
-        );
+                list.render(f, chunks[0]);
+                f.render_widget(help_component.clone(), chunks[1]);
+            })
+            .unwrap();
 
         if let Event::Key(KeyEvent {
             code, modifiers, ..
         }) = event::read().unwrap()
         {
             match code {
-                KeyCode::Char('c') if modifiers.contains(KeyModifiers::CONTROL) => {
-                    return None;
-                }
+                KeyCode::Char('c') if modifiers.contains(KeyModifiers::CONTROL) => break None,
+                KeyCode::Char('q') => break None,
                 KeyCode::Char('/') => {
-                    list.showing_filter = !list.showing_filter;
+                    list.showing_filter = true;
+                    list.filter.clear();
+                    help_component.activate_filter_mode();
                 }
-                KeyCode::Esc => list.showing_filter = false,
-                KeyCode::Char('q') => return None,
+                KeyCode::Esc => {
+                    list.showing_filter = false;
+                    list.filter.clear();
+                    list.update_filter();
+                    help_component.deactivate_filter_mode();
+                }
+                KeyCode::Enter => {
+                    if let Some(item) = list.get_selected_item() {
+                        break Some(item.title.clone());
+                    }
+                }
                 KeyCode::Down => list.next(),
                 KeyCode::Up => list.previous(),
-                KeyCode::Enter => {
-                    return Some(list.filtered_items[list.state.selected()?].title.clone())
-                }
                 KeyCode::Char(c) if list.showing_filter => {
                     list.filter.push(c);
                     list.update_filter();
@@ -267,8 +213,17 @@ pub fn handle_list(list: &mut ItemList, x: u16, y: u16) -> Option<String> {
                 _ => {}
             }
         }
-        list.render(&mut terminal, Rect::new(x, y, 40, 50), &mut help_component);
-    }
+
+        println!("After key handling:"); // Debug print
+        println!("showing_filter: {}", list.showing_filter); // Debug print
+        println!("filter: {}", list.filter); // Debug print
+    };
+
+    crossterm::terminal::disable_raw_mode().unwrap();
+
+    terminal.clear().unwrap();
+
+    result
 }
 
 #[cfg(test)]
